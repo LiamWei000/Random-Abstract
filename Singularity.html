@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SINGULARITY Cyber Command</title>
+
+<style>
+:root{
+  --bg:#04060c;
+  --glass:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.1);
+  --accent:#00ffe5;
+  --danger:#ff3b6b;
+  --text:#e6edf3;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Consolas,monospace;
+  overflow:hidden;
+}
+
+/* Boot */
+#boot{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:999;
+  letter-spacing:2px;
+  transition:opacity .6s ease;
+}
+#boot.fade{opacity:0;pointer-events:none}
+
+header{
+  padding:20px 40px;
+  backdrop-filter:blur(12px);
+  background:var(--glass);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+}
+
+.dashboard{
+  padding:30px 40px;
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+  height:calc(100vh - 80px);
+}
+
+.card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:20px;
+  backdrop-filter:blur(12px);
+}
+
+.logs{
+  height:40%;
+  overflow-y:auto;
+  font-size:12px;
+  margin-bottom:20px;
+}
+
+canvas{
+  width:100%;
+  height:200px;
+  background:#0c111b;
+  border-radius:12px;
+}
+
+.metric{margin-top:15px}
+.bar{
+  height:8px;
+  background:#1a1f2e;
+  border-radius:8px;
+  overflow:hidden;
+  margin-top:5px;
+}
+.bar span{
+  display:block;
+  height:100%;
+  width:0%;
+  transition:.4s;
+}
+.safe{background:var(--accent)}
+.danger{background:var(--danger)}
+
+@media(max-width:900px){
+  .dashboard{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="boot">
+  <h2>SINGULARITY ENGINE INITIALIZING</h2>
+  <span>Loading predictive AI modules...</span>
+</div>
+
+<header>
+  <div>SINGULARITY CYBER COMMAND</div>
+  <div id="clock"></div>
+</header>
+
+<div class="dashboard">
+  <div class="card">
+    <h3>Predictive Threat Analytics</h3>
+    <div class="logs" id="logs"></div>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>AI Risk Core</h3>
+
+    <div class="metric">
+      Threat Probability
+      <div class="bar"><span id="threatBar"></span></div>
+    </div>
+
+    <div class="metric">
+      System Integrity
+      <div class="bar"><span id="integrityBar"></span></div>
+    </div>
+
+    <div class="metric">
+      Anomaly Score
+      <div class="bar"><span id="anomalyBar"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* BOOT */
+setTimeout(()=>{
+  const boot=document.getElementById("boot");
+  boot.classList.add("fade");
+  setTimeout(()=>boot.remove(),600);
+},2500);
+
+/* CLOCK */
+const clock=document.getElementById("clock");
+setInterval(()=>{
+  clock.textContent=new Date().toLocaleString();
+},1000);
+
+/* AI MODEL */
+function predictiveModel(){
+  const entropy=Math.random();
+  const anomaly=Math.random();
+  const traffic=Math.random();
+
+  const threat=(entropy*0.4 + anomaly*0.35 + traffic*0.25)*100;
+  const integrity=100-(threat*0.6);
+
+  return{
+    threat:Math.min(100,threat),
+    integrity:Math.max(50,integrity),
+    anomaly:anomaly*100
+  };
+}
+
+function updateMetrics(){
+  const data=predictiveModel();
+
+  updateBar("threatBar",data.threat,70);
+  updateBar("integrityBar",data.integrity,0);
+  updateBar("anomalyBar",data.anomaly,75);
+}
+
+function updateBar(id,value,dangerLimit){
+  const el=document.getElementById(id);
+  el.style.width=value+"%";
+  el.classList.remove("safe","danger");
+  el.classList.add(value>dangerLimit?"danger":"safe");
+}
+
+setInterval(updateMetrics,3000);
+updateMetrics();
+
+/* LOG ENGINE */
+const logs=document.getElementById("logs");
+const events=[
+  "AI neural recalibration complete",
+  "Predictive anomaly spike detected",
+  "Encrypted node verified",
+  "Adaptive firewall updated",
+  "Behavioral deviation recognized"
+];
+
+setInterval(()=>{
+  const time=new Date().toLocaleTimeString();
+  const event=events[Math.floor(Math.random()*events.length)];
+
+  const line=document.createElement("div");
+  line.textContent=`[${time}] ${event}`;
+  logs.appendChild(line);
+
+  if(logs.children.length>100){
+    logs.removeChild(logs.firstChild);
+  }
+
+  logs.scrollTop=logs.scrollHeight;
+},2000);
+
+/* RESPONSIVE CHART */
+const canvas=document.getElementById("chart");
+const ctx=canvas.getContext("2d");
+
+function resizeCanvas(){
+  canvas.width=canvas.clientWidth;
+  canvas.height=200;
+}
+window.addEventListener("resize",resizeCanvas);
+resizeCanvas();
+
+let points=[];
+
+function drawChart(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(points.length>60) points.shift();
+  points.push(Math.random()*canvas.height);
+
+  ctx.beginPath();
+  ctx.strokeStyle="#00ffe5";
+  ctx.lineWidth=2;
+
+  points.forEach((p,i)=>{
+    const x=i*(canvas.width/60);
+    const y=canvas.height-p;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+
+  ctx.stroke();
+  requestAnimationFrame(drawChart);
+}
+drawChart();
+</script>
+
+</body>
+</html>
